@@ -2,6 +2,7 @@
 Small script which checks the File Hash and/or File on VirusTotal, can be integrated into the context menu of the windows explorer
 
 If you wand to use this skript in the context menu, open Regedit, go to:
+
 Computer\HKEY_CLASSES_ROOT\*\shell\
 
 "C:\Program Files\PowerShell\7\pwsh.exe" -File "C:\path\to\this\skript\check_onVirusTotal.ps1" "%V" 
