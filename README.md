@@ -1,6 +1,10 @@
 # check_onVirusTotal
 Small script which checks the File Hash and/or File on VirusTotal, can be integrated into the context menu of the windows explorer
 
+You need to have a VT Account:
+https://support.virustotal.com/hc/en-us/articles/115002088769-Please-give-me-an-API-key
+and get you API Key, enter your personal API Key into the $APIKey Variable in the Script - otherwise it won't work
+
 If you wand to use this skript in the context menu, open Regedit, go to:
 
 Computer\HKEY_CLASSES_ROOT\*\shell\
