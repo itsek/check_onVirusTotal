@@ -1,25 +1,28 @@
-﻿#Requires -Version 7.0
-#Uploads Hashes and Files to VT for Checks
+#Requires -Version 7.0
+#Script uses now Virustotal API v3
 
 param(
     $FileToProcess
 )
 
-#please enter here your VT API Key, which you will get after Registering: https://support.virustotal.com/hc/en-us/articles/115002088769-Please-give-me-an-API-key
+#Enter your API Key here
 $APIKey = ""
 $FileHash = (Get-FileHash -Algorithm SHA1 -Path $FileToProcess).Hash
 
-Write-Host "$FileToProcess"
-Write-Host "$FileHash"
+Write-Host "File: $FileToProcess"
+Write-Host "SHA-256 Hash: $FileHash"
 
-#basic VT Accounts can only submit Files up to 32MB in size
-function check_filesizelimit {
+
+
+function check_filesizeover32mb{
     If ((Get-Item $FileToProcess).length -ge 33554432) {
-        Write-Host "Sorry, public VT API supports only up to 32MB :(" -ForegroundColor Magenta
-        Read-Host "Any Key to close..."
-        Exit 1
+        return 0
+    }
+    else {
+        return 1
     }
 }
+
 
 
 function submit_hash {
@@ -28,24 +31,27 @@ function submit_hash {
         $Hash = $FileHash
     )
 
-    $URL="https://www.virustotal.com/vtapi/v2/file/report"
-    $postParams = @{
-    apikey=$APIKey
-    resource=$Hash
+    $URL="https://www.virustotal.com/api/v3/files/"
+    $Headers = @{
+        "x-apikey" = $APIKey
     }
     
     try {
-        $Result = Invoke-WebRequest -Uri $URL -Method Post -Body $postParams
-    }    
-    catch {
-        Write-Host "Something went wrong, Could not Check Hash with Virustotal DB, please check manually" -ForegroundColor Yellow
-        Read-Host "Press any Key to close"
-        Exit 1
-    }
+        $Result = Invoke-RestMethod -Uri $URL$Hash -Headers $Headers
+    }   
     
-    $ResultAsJSON = $Result.Content| ConvertFrom-Json
-    $ResultAsJSON
-
+    catch [System.Net.Http.HttpRequestException] {
+        If ($_.Exception.Response.StatusCode) {
+            Write-Host "Hash not found in VT"
+            Return 2
+        }
+        else {
+            Write-Host "Could not Check Hash with Virustotal DB, please check manually" -ForegroundColor Yellow
+            Read-Host "Press any Key to close"
+            Return 1
+        }
+    }
+    $Result.data.attributes
 }
 
 
@@ -56,55 +62,87 @@ function submit_file {
         $FileToUpload
     )
 
-    $URL="https://www.virustotal.com/vtapi/v2/file/scan"
+    $URL="https://www.virustotal.com/api/v3/files"
+    $Headers = @{
+        "x-apikey" = $APIKey
+    }
     $postParams = @{
-    apikey=$APIKey
-    file=Get-Item -Path $FileToUpload
+        file = Get-Item -Path $FileToUpload
     }
 
-    check_filesizelimit
+    $sizeflag = check_filesizeover32mb
+    if ($sizeflag -eq 0) {
+        $requestiurl = $URL+"/upload_url"
+        $UploadURL = Invoke-RestMethod -Uri $requestiurl -Method GET -Headers $Headers
+        $URL = $UploadURL.data
+    }
 
     try {
-        $Result = Invoke-RestMethod -Uri $URL -Method Post -Form $postParams
+        $Result = Invoke-RestMethod -Uri $URL -Method Post -Headers $Headers -Form $postParams
     }
+
     catch {
-        Write-Host "Something went wrong, Could not Uplaod to Virustotal, please check manually" -ForegroundColor Yellow
+        Write-Host "Could not Uplaod to Virustotal, please check manually" -ForegroundColor Yellow
         Read-Host "Press any Key to close"
         Exit 1
     }
-    $Result
+    
+    $Result.data.id
+    Write-Host "File was submitted succesfully" -ForegroundColor Green
+    Write-Host "Analysis ID: $($Result.data.id)"
 }
 
 
-$HashResult = submit_hash
 
-    if ($HashResult.response_code -eq 0) {
+function get_analysis_info {
+
+    param(
+        $ID = ""
+    )
+
+    $analyseURL="https://www.virustotal.com/api/v3/analyses/"
+    $Headers = @{
+        "x-apikey" = $APIKey
+    }
+
+    try {
+        $Result = Invoke-RestMethod -Uri $analyseURL$ID -Headers $Headers
+    }    
+    catch {
+        Write-Host "Seems like the analysis does not exist? this is rather strange, please submit manually!" -ForegroundColor Yellow
+        Read-Host "Press any Key to close"
+        Exit 1
+    }
+
+    while ($Result.data.attributes.status -notlike "completed") {
+        Write-Host "Waiting for Result, could take a few Minutes... please be patient, the Result will be fetched as soon its ready"
+        Start-Sleep 30
+        $Result = Invoke-RestMethod -Uri $analyseURL$ID -Headers $Headers
+    }
+
+    $Result.meta.file_info
+    $Result.data.attributes.stats
+}
+
+
+
+$HashResult = submit_hash -Hash $FileHash
+
+    if ($HashResult -eq 2) {
         $HashResult.verbose_msg
         Write-Host "This File(hash) is not in the VirusTotal Database, so no Scan Results for it" -ForegroundColor Green
         $Answer = Read-Host "Would you like to submmit it (WARNING: Uploads file to Google! please think before proceeding! (Y/N)"
             
             If ($Answer -like "Y") {
-                $Submitresult = submit_file -FileToUpload $FileToProcess
-                $Submitresult.verbose_msg
-                $Hash = $Submitresult.sha1
-                
-                While ($Submitresult.verbose_msg -match 'queued' ) {
-                    Write-Host "Waiting 60 seconds to fetch the Result"
-                    Start-Sleep -Seconds 60
-                    $Submitresult = submit_hash -Hash $Hash
-                    Write-Host $Submitresult
-                }
-                
-                Write-Host "Report for the Submitted File" -ForegroundColor Green
-                $Submitresult
-                Write-Host "Positives: $($Submitresult.positives)" -ForegroundColor Magenta
+                $AnalysisID = submit_file -FileToUpload $FileToProcess
+                get_analysis_info -ID $AnalysisID
             }
     }
 
     else {
         Write-Host "Report for the File(hash):" -ForegroundColor Green
         $HashResult
-        Write-Host "Positives: $($HashResult.positives)" -ForegroundColor Magenta
+        $HashResult.last_analysis_stats
     }
 
 Read-Host "Press Any Key to close"
