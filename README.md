@@ -14,7 +14,8 @@ Create a Key with the Name of the Script, or any name you like, then add a "comm
 "C:\Program Files\PowerShell\7\pwsh.exe" -File "C:\path\to\this\skript\check_onVirusTotal.ps1" "%V" 
 
 Here a pic:
-![Unbenannt](https://user-images.githubusercontent.com/76947368/111978745-8e644c80-8b04-11eb-9f40-8f94575ca6d4.PNG)
+![Unbenannt](https://user-images.githubusercontent.com/76947368/112162501-67814580-8bec-11eb-826e-7d7c8dfa5d97.PNG)
 
 Now you can run this script from the context menu:
-![pic](https://user-images.githubusercontent.com/76947368/111978345-16962200-8b04-11eb-9c6e-1ea976542964.png)
+![Unbenannt](https://user-images.githubusercontent.com/76947368/112162607-7e279c80-8bec-11eb-9cbc-722d7c094d93.PNG)
+
