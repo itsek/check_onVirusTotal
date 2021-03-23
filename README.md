@@ -13,7 +13,7 @@ Computer\HKEY_CLASSES_ROOT\*\shell\
 Create a Key with the Name of the Script, or any name you like, then add a "command" subkey, finally a REG_SZ with this command:
 "C:\Program Files\PowerShell\7\pwsh.exe" -File "C:\path\to\this\skript\check_onVirusTotal.ps1" "%V" 
 
-Here a pic:
+Here is a pic how it should look like:
 ![Unbenannt](https://user-images.githubusercontent.com/76947368/112162501-67814580-8bec-11eb-826e-7d7c8dfa5d97.PNG)
 
 Now you can run this script from the context menu:
