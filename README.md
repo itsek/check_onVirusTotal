@@ -5,7 +5,10 @@ You need to have a VT Account:
 https://support.virustotal.com/hc/en-us/articles/115002088769-Please-give-me-an-API-key
 and **get you API Key, enter your personal key into the $APIKey Variable in the Script - otherwise it won't work**
 
-If you want to use this skript in the context menu, open Regedit, go to:
+Can be used Standaline:
+**.\Check_OnVirusTotal.ps1 -FileToProcess "C:\path\to\your\file.exe" **
+
+Or ff you want to use this skript in the context menu, open Regedit, go to:
 
 Computer\HKEY_CLASSES_ROOT\*\shell\
 Create a Key with the Name of the Script, or any name you like, then add a "command" subkey, finally a REG_SZ with this command:
