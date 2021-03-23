@@ -8,7 +8,7 @@ and **get you API Key, enter your personal key into the $APIKey Variable in the 
 Can be used Standalone:\
 `.\Check_OnVirusTotal.ps1 -FileToProcess "C:\path\to\your\file.exe"`
 
-Or ff you want to use this skript in the context menu, open Regedit, go to:
+Or if you want to use this skript in the context menu, open Regedit, go to:
 
 Computer\HKEY_CLASSES_ROOT\*\shell\
 Create a Key with the Name of the Script, or any name you like, then add a "command" subkey, finally a REG_SZ with this command:
