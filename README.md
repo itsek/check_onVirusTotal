@@ -1,4 +1,4 @@
-# check_onVirusTotal
+# check_onVirusTotal.ps1
 Small script which checks the File Hash and/or File on VirusTotal, can be integrated into the context menu of the windows explorer
 
 You need to have a VT Account:
