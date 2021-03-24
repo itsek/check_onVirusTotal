@@ -42,11 +42,11 @@ function submit_hash {
     
     catch [System.Net.Http.HttpRequestException] {
         If ($_.Exception.Response.StatusCode) {
-            Write-Host "Hash not found in VT"
+            Write-Host "Hash not found in Virustotal DB"
             Return 2
         }
         else {
-            Write-Host "Could not Check Hash with Virustotal DB, please check manually" -ForegroundColor Yellow
+            Write-Host "Could not check hash with Virustotal DB, please check manually" -ForegroundColor Yellow
             Read-Host "Press any Key to close"
             Return 1
         }
@@ -82,7 +82,7 @@ function submit_file {
     }
 
     catch {
-        Write-Host "Could not Uplaod to Virustotal, please check manually" -ForegroundColor Yellow
+        Write-Host "Could not uplaod to Virustotal, please check manually" -ForegroundColor Yellow
         Read-Host "Press any Key to close"
         Exit 1
     }
@@ -115,7 +115,7 @@ function get_analysis_info {
     }
 
     while ($Result.data.attributes.status -notlike "completed") {
-        Write-Host "Waiting for Result, could take a few Minutes... please be patient, the Result will be fetched as soon its ready"
+        Write-Host "Waiting for result, could take a few minutes... please be patient, the result will be fetched as soon its ready"
         Start-Sleep 30
         $Result = Invoke-RestMethod -Uri $analyseURL$ID -Headers $Headers
     }
@@ -130,7 +130,7 @@ $HashResult = submit_hash -Hash $FileHash
 
     if ($HashResult -eq 2) {
         $HashResult.verbose_msg
-        Write-Host "This File(hash) is not in the VirusTotal Database, so no Scan Results for it" -ForegroundColor Green
+        Write-Host "This file(hash) is not in the VirusTotal DB, so no scan results for it" -ForegroundColor Green
         $Answer = Read-Host "Would you like to submit it (WARNING: Uploads file to Google! please think before proceeding! (Y/N)"
             
             If ($Answer -like "Y") {
@@ -140,7 +140,7 @@ $HashResult = submit_hash -Hash $FileHash
     }
 
     else {
-        Write-Host "Report for the File(hash):" -ForegroundColor Green
+        Write-Host "Report for the file(hash):" -ForegroundColor Green
         $HashResult
         $HashResult.last_analysis_stats
     }
