@@ -7,10 +7,10 @@ param(
 
 #Enter your API Key here
 $APIKey = ""
-$FileHash = (Get-FileHash -Algorithm SHA1 -Path $FileToProcess).Hash
+$FileHash = (Get-FileHash -Algorithm SHA256 -Path $FileToProcess).Hash
 
 Write-Host "File: $FileToProcess"
-Write-Host "SHA-256 Hash: $FileHash"
+Write-Host "SHA256 Hash: $FileHash"
 
 
 
@@ -131,7 +131,7 @@ $HashResult = submit_hash -Hash $FileHash
     if ($HashResult -eq 2) {
         $HashResult.verbose_msg
         Write-Host "This File(hash) is not in the VirusTotal Database, so no Scan Results for it" -ForegroundColor Green
-        $Answer = Read-Host "Would you like to submmit it (WARNING: Uploads file to Google! please think before proceeding! (Y/N)"
+        $Answer = Read-Host "Would you like to submit it (WARNING: Uploads file to Google! please think before proceeding! (Y/N)"
             
             If ($Answer -like "Y") {
                 $AnalysisID = submit_file -FileToUpload $FileToProcess
